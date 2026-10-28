@@ -1,11 +1,10 @@
-import { ClerkProvider } from "@clerk/nextjs";
-import type { Metadata } from "next";
-import "./globals.css";
-import { AppShell } from "@/components/app-shell/AppShell";
+import { ClerkProvider } from '@clerk/nextjs';
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "FollowPilot AI",
-  description: "AI sales assistant for B2B outreach.",
+  title: 'FollowPilot AI',
+  description: 'AI sales assistant for B2B outreach.',
 };
 
 export default function RootLayout({
@@ -17,7 +16,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" className="bg-neutral-50">
         <body className="min-h-screen text-neutral-900 font-sans antialiased">
-          <AppShell>{children}</AppShell>
+          {children}
         </body>
       </html>
     </ClerkProvider>
