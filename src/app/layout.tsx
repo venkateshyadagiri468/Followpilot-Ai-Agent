@@ -1,10 +1,11 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import "./globals.css";
+import { AppShell } from "@/components/app-shell/AppShell";
 
 export const metadata: Metadata = {
   title: "FollowPilot AI",
-  description: "AI sales assistant for freelancers.",
+  description: "AI sales assistant for B2B outreach.",
 };
 
 export default function RootLayout({
@@ -14,8 +15,10 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" className="bg-warm-white">
-        <body className="min-h-screen text-gray-900">{children}</body>
+      <html lang="en" className="bg-neutral-50">
+        <body className="min-h-screen text-neutral-900 font-sans antialiased">
+          <AppShell>{children}</AppShell>
+        </body>
       </html>
     </ClerkProvider>
   );
