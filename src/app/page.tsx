@@ -1,17 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SignInButton, SignUpButton, Show, UserButton, useAuth } from "@clerk/nextjs";
+import {
+  SignInButton,
+  SignUpButton,
+  Show,
+  UserButton,
+  useAuth,
+} from "@clerk/nextjs";
 import { Suspense } from "react";
 import LeadCard from "@/components/LeadCard";
 import RecommendationModal from "@/components/RecommendationModal";
-import { Lead, Recommendation, Organization, Membership } from "@/types/index";
+import type { Lead, Recommendation } from "@/types/index";
 
 function DashboardContent() {
   const { isSignedIn, isLoaded, userId } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openRec, setOpenRec] = useState<{ rec: Recommendation; leadName: string } | null>(null);
+  const [openRec, setOpenRec] = useState<{
+    rec: Recommendation;
+    leadName: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -19,7 +28,7 @@ function DashboardContent() {
       setLoading(false);
       return;
     }
-    fetchLeads();
+    void fetchLeads();
   }, [isLoaded, isSignedIn]);
 
   async function fetchLeads() {
@@ -78,12 +87,18 @@ function DashboardContent() {
     setOpenRec(null);
   }
 
-  const statusCounts = leads.reduce((acc, l) => {
-    acc[l.status] = (acc[l.status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const statusCounts = leads.reduce(
+    (acc, l) => {
+      acc[l.status] = (acc[l.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
-  const totalActive = Object.values(statusCounts).reduce((a: number, b: number) => a + b, 0);
+  const totalActive = Object.values(statusCounts).reduce(
+    (a: number, b: number) => a + b,
+    0,
+  );
   const openValue = leads
     .filter((l) => l.status !== "WON" && l.status !== "LOST")
     .reduce((sum, l) => sum + (l.dealValue ? parseFloat(l.dealValue) : 0), 0);
@@ -97,10 +112,16 @@ function DashboardContent() {
       <header className="flex items-center justify-between pb-6 mb-8 border-b border-gray-200">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">FollowPilot AI</h1>
-          <p className="text-sm text-gray-500">Premium sales workspace for freelancers</p>
+          <p className="text-sm text-gray-500">
+            Premium sales workspace for freelancers
+          </p>
         </div>
         <div className="flex items-center gap-3">
-          <Suspense fallback={<div className="h-9 w-20 animate-pulse bg-gray-100 rounded-md" />}>
+          <Suspense
+            fallback={
+              <div className="h-9 w-20 animate-pulse bg-gray-100 rounded-md" />
+            }
+          >
             <Show when="signed-out">
               <SignInButton mode="modal">
                 <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition cursor-pointer">
@@ -129,7 +150,9 @@ function DashboardContent() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
           <h2 className="text-xl font-semibold mb-2">Open Pipeline</h2>
-          <p className="text-4xl font-bold text-emerald-600">${openValue.toLocaleString()}</p>
+          <p className="text-4xl font-bold text-emerald-600">
+            ${openValue.toLocaleString()}
+          </p>
           <p className="text-sm text-gray-500 mt-1">
             Across {totalActive} active leads
           </p>
@@ -145,13 +168,18 @@ function DashboardContent() {
 
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Leads</h2>
-        {loading && <span className="text-sm text-gray-500 animate-pulse">Loading…</span>}
+        {loading && (
+          <span className="text-sm text-gray-500 animate-pulse">Loading…</span>
+        )}
       </div>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="p-4 bg-white border border-gray-200 rounded-lg animate-pulse">
+            <div
+              key={i}
+              className="p-4 bg-white border border-gray-200 rounded-lg animate-pulse"
+            >
               <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
               <div className="h-3 bg-gray-200 rounded w-1/2 mb-4" />
               <div className="h-8 bg-gray-200 rounded w-1/4" />
@@ -184,7 +212,9 @@ function DashboardContent() {
 
 export default function Dashboard() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading…</div>}>
+    <Suspense
+      fallback={<div className="p-8 text-center text-gray-500">Loading…</div>}
+    >
       <DashboardContent />
     </Suspense>
   );

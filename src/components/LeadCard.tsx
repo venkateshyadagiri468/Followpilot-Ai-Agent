@@ -1,4 +1,4 @@
-import { Lead } from "@/types/index";
+import type { Lead } from "@/types/index";
 
 const statusColors: Record<string, string> = {
   NEW: "bg-blue-100 text-blue-700",

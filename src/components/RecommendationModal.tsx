@@ -1,4 +1,4 @@
-import { Recommendation } from "@/types/index";
+import type { Recommendation } from "@/types/index";
 
 const actionLabels: Record<string, string> = {
   SEND_EMAIL: "Send Email",
@@ -33,38 +33,59 @@ export default function RecommendationModal({
         <div className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">AI Recommendation</h2>
+              <h2 className="text-lg font-bold text-gray-900">
+                AI Recommendation
+              </h2>
               <p className="text-sm text-gray-500">for {leadName}</p>
             </div>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            >
               &times;
             </button>
           </div>
 
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border ${actionColors[recommendation.action] || ""}`}>
+          <div
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border ${actionColors[recommendation.action] || ""}`}
+          >
             {actionLabels[recommendation.action] || recommendation.action}
           </div>
 
           <div className="mt-4">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Rationale</h3>
-            <p className="mt-1 text-sm text-gray-700">{recommendation.rationale}</p>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              Rationale
+            </h3>
+            <p className="mt-1 text-sm text-gray-700">
+              {recommendation.rationale}
+            </p>
           </div>
 
           {recommendation.draft && (
             <div className="mt-4">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Draft Email</h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                Draft Email
+              </h3>
               <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <p className="text-xs font-medium text-gray-500">Subject</p>
-                <p className="text-sm font-semibold text-gray-900">{recommendation.draft.subject}</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {recommendation.draft.subject}
+                </p>
                 <p className="text-xs font-medium text-gray-500 mt-2">Body</p>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{recommendation.draft.body}</p>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                  {recommendation.draft.body}
+                </p>
               </div>
             </div>
           )}
 
           <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
-            <span className={`px-2 py-0.5 rounded-full ${recommendation.requiresApproval ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}>
-              {recommendation.requiresApproval ? "Requires Approval" : "Auto-executable"}
+            <span
+              className={`px-2 py-0.5 rounded-full ${recommendation.requiresApproval ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}
+            >
+              {recommendation.requiresApproval
+                ? "Requires Approval"
+                : "Auto-executable"}
             </span>
           </div>
 

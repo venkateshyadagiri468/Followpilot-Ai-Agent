@@ -17,3 +17,4 @@ tsconfig.tsbuildinfo
 .idea/
 .vscode/
 .DS_Store
+.neon

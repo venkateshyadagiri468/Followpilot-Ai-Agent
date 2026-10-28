@@ -1,13 +1,14 @@
-import { Recommendation, recommendationSchema } from "./recommendation-schema";
+import { recommendationSchema } from "./recommendation-schema";
 import { db } from "../db";
-import { leads, organizations, activities, followUpTasks, aiRecommendations, messageDrafts, memberships } from "../db/schema";
-import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { leads, activities, aiRecommendations, messageDrafts, memberships } from "../db/schema";
+import { eq, and, gte, desc } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
-import { z } from "zod";
+import type { z } from "zod";
 
 /**
  * Represents one piece of evidence cited in a recommendation.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type Evidence = {
   activityId: string;
   explanation: string;
@@ -212,9 +213,6 @@ function applyDeterministicPolicy(
   let draft: { subject: string; body: string } | null = null;
 
   // Rule: If lead has a pending follow-up task, check if it's due
-  const pendingTasks = recentActivities?.filter((a: any) => a.type === "FOLLOW_UP_CREATED");
-  
-  // Rule: If lead status is NEW and no recent contact, suggest first follow-up
   if (lead.status === "NEW") {
     if (!recentActivities || recentActivities.length === 0) {
       evidence.push({
