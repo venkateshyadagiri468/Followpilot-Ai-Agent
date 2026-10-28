@@ -1,50 +1,55 @@
-import React from 'react';
+import * as React from 'react';
+import { cn } from '@/lib/utils';
 
-interface CardProps {
-  children: React.ReactNode;
-  className?: string;
-  as?: 'div' | 'article' | 'section';
-}
-
-export function Card({ children, className = '', as: Tag = 'div' }: CardProps) {
+export function Card({ className, ...rest }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <Tag
-      className={`
-        bg-white rounded-xl border border-neutral-200 shadow-xs
-        ${className}
-      `.trim().replace(/\s+/g, ' ')}
-    >
-      {children}
-    </Tag>
+    <div
+      className={cn(
+        'rounded-2xl border border-neutral-200/70 bg-white shadow-xl shadow-neutral-900/5',
+        className
+      )}
+      {...rest}
+    />
   );
 }
 
-interface CardHeaderProps {
-  title: string;
+interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  title?: string;
   description?: string;
   action?: React.ReactNode;
-  className?: string;
 }
 
-export function CardHeader({ title, description, action, className = '' }: CardHeaderProps) {
+export function CardHeader({ className, title, description, action, ...rest }: CardHeaderProps) {
   return (
-    <div
-      className={`
-        flex items-start justify-between px-5 pt-5 pb-4
-        ${className}
-      `.trim().replace(/\s+/g, ' ')}
-    >
-      <div>
-        <h3 className="text-base font-semibold text-neutral-900">{title}</h3>
-        {description && (
-          <p className="mt-0.5 text-sm text-neutral-500">{description}</p>
-        )}
+    <div className={cn('flex flex-col space-y-1.5 p-6 pb-0', className)} {...rest}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-1.5">
+          {title && <CardTitle>{title}</CardTitle>}
+          {description && <CardDescription>{description}</CardDescription>}
+        </div>
+        {action && <div className="flex-shrink-0">{action}</div>}
       </div>
-      {action}
     </div>
   );
 }
 
-export function CardContent({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`px-5 pb-5 ${className}`.trim()}>{children}</div>;
+export function CardTitle({ className, ...rest }: React.HTMLAttributes<HTMLHeadingElement>) {
+  return (
+    <h2
+      className={cn('text-xl font-bold tracking-tight text-neutral-900', className)}
+      {...rest}
+    />
+  );
+}
+
+export function CardDescription({ className, ...rest }: React.HTMLAttributes<HTMLParagraphElement>) {
+  return <p className={cn('text-sm text-neutral-500', className)} {...rest} />;
+}
+
+export function CardContent({ className, ...rest }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn('p-6', className)} {...rest} />;
+}
+
+export function CardFooter({ className, ...rest }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn('flex items-center p-6 pt-0', className)} {...rest} />;
 }
