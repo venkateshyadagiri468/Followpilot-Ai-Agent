@@ -1,51 +1,56 @@
-import { db } from "../../../server/db";
-import { aiRecommendations, leads, organizations, memberships } from "../../../server/db/schema";
-import { eq, and } from "drizzle-orm";
-import { NextResponse } from "next/server";
-import { recommendNextAction } from "../../../server/agents/recommendation-service";
+/**
+ * POST /api/v1/recommendations
+ *
+ * Request an AI follow-up recommendation for a lead.
+ *
+ * SECURITY: organizationId and requestedBy are NEVER taken from the request
+ * body. Both come from the authenticated session via requireOrg(). The
+ * recommendation service re-verifies membership as defense-in-depth, but
+ * the route is the gate: a client-supplied orgId/userId is ignored.
+ */
 
-// POST /api/v1/recommendations - Request an AI recommendation
-export async function POST(request: Request) {
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+import { requireOrg } from '../../../server/auth'
+import { recommendNextAction } from '../../../server/agents/recommendation-service'
+import { auditFromContext, extractClientMeta } from '../../../server/audit'
+
+export async function POST(request: NextRequest) {
+  const ctx = await requireOrg(request)
+  if ('response' in ctx) return ctx.response
+
+  let body: { leadId?: string }
   try {
-    const body = await request.json();
-    const { organizationId, leadId, requestedBy } = body;
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
 
-    // Verify organization access
-    const orgMember = await db.select().from(memberships)
-      .where(and(
-        eq(memberships.organizationId, organizationId),
-        eq(memberships.userId, requestedBy),
-      ))
-      .limit(1);
+  if (!body.leadId) {
+    return NextResponse.json({ error: 'leadId is required' }, { status: 400 })
+  }
 
-    if (!orgMember.length) {
-      return NextResponse.json({ error: "Organization access denied" }, { status: 403 });
-    }
+  try {
+    const result = await recommendNextAction({
+      organizationId: ctx.orgId,
+      leadId: body.leadId,
+      requestedBy: ctx.userId,
+    })
 
-    // Verify lead belongs to organization
-    const lead = await db.select().from(leads)
-      .where(and(
-        eq(leads.id, leadId),
-        eq(leads.organizationId, organizationId),
-      ))
-      .limit(1);
+    await auditFromContext(ctx, {
+      action: 'RECOMMENDATION_GENERATE',
+      entity: 'RECOMMENDATION',
+      entityId: result.recommendationId,
+      metadata: { leadId: body.leadId, action: result.action },
+      ...extractClientMeta(request),
+    })
 
-    if (!lead.length) {
-      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
-    }
-
-    // Call the recommendation service
-    const input = {
-      organizationId,
-      leadId,
-      requestedBy,
-    };
-
-    const result = await recommendNextAction(input);
-
-    return NextResponse.json({ data: result, success: true });
+    return NextResponse.json({ data: result, success: true })
   } catch (error: any) {
-    console.error("Error generating recommendation:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    console.error('Error generating recommendation:', error)
+    return NextResponse.json(
+      { error: error.message || 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
