@@ -2,6 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { AppShell } from '@/components/app-shell/AppShell';
 
 /**
@@ -11,12 +12,13 @@ import { AppShell } from '@/components/app-shell/AppShell';
  */
 export function Protected({ children }: { children: React.ReactNode }) {
   const { isLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
-      window.location.replace('/sign-in');
+      router.replace('/sign-in');
     }
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, router]);
 
   if (!isLoaded || !isSignedIn) {
     return (
