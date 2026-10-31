@@ -9,28 +9,9 @@ import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Dialog } from '@/components/ui/Dialog';
+import { LeadsKanbanView } from '@/components/kanban/LeadsKanbanView';
 import { useRouter } from 'next/navigation';
-
-interface Lead {
-  id: string;
-  name: string;
-  email: string;
-  company?: string;
-  status: string;
-  createdAt: string;
-}
-
-const STATUSES = [
-  { value: '', label: 'All Statuses' },
-  { value: 'NEW', label: 'New' },
-  { value: 'CONTACTED', label: 'Contacted' },
-  { value: 'REPLIED', label: 'Replied' },
-  { value: 'QUALIFIED', label: 'Qualified' },
-  { value: 'PROPOSAL', label: 'Proposal' },
-  { value: 'WON', label: 'Won' },
-  { value: 'LOST', label: 'Lost' },
-  { value: 'DORMANT', label: 'Dormant' },
-];
+import type { Lead } from '@/types/index';
 
 export function LeadsContent() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -39,10 +20,23 @@ export function LeadsContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [formData, setFormData] = useState({ name: '', email: '', company: '', status: 'NEW' });
+  const [viewMode, setViewMode] = useState<'table' | 'board'>('table');
+
+  const STATUSES = [
+    { value: '', label: 'All Statuses' },
+    { value: 'NEW', label: 'New' },
+    { value: 'CONTACTED', label: 'Contacted' },
+    { value: 'REPLIED', label: 'Replied' },
+    { value: 'QUALIFIED', label: 'Qualified' },
+    { value: 'PROPOSAL', label: 'Proposal' },
+    { value: 'WON', label: 'Won' },
+    { value: 'LOST', label: 'Lost' },
+    { value: 'DORMANT', label: 'Dormant' },
+  ];
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) {
@@ -101,6 +95,24 @@ export function LeadsContent() {
     setEditingLead(null);
   }
 
+  async function handleStatusChange(leadId: string, newStatus: string) {
+    try {
+      const res = await fetch(`/api/leads/${leadId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to update status');
+      }
+      await fetchLeads();
+    } catch (err: any) {
+      setError(err.message);
+    }
+  }
+
   const filteredLeads = leads.filter((lead) => {
     const matchesSearch = lead.name.toLowerCase().includes(search.toLowerCase()) ||
       lead.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -127,7 +139,7 @@ export function LeadsContent() {
         </div>
       )}
 
-      {/* Filters */}
+      {/* Filters + View toggle */}
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-wrap items-center gap-4">
@@ -142,17 +154,35 @@ export function LeadsContent() {
                 </svg>
               }
             />
-            <Select
-              options={STATUSES}
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-48"
-            />
+            <div className="ml-auto flex items-center rounded-lg border border-neutral-200 p-0.5">
+              <button
+                type="button"
+                onClick={() => setViewMode('table')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  viewMode === 'table'
+                    ? 'bg-brand-600 text-white'
+                    : 'text-neutral-600 hover:bg-neutral-100'
+                }`}
+              >
+                Table
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('board')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  viewMode === 'board'
+                    ? 'bg-brand-600 text-white'
+                    : 'text-neutral-600 hover:bg-neutral-100'
+                }`}
+              >
+                Board
+              </button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Leads Table */}
+      {/* Leads Table / Board */}
       <Card>
         <CardContent className="p-0">
           {loading ? (
@@ -165,13 +195,22 @@ export function LeadsContent() {
             <EmptyState
               icon={
                 <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               }
               title={search || statusFilter ? 'No leads match your filters' : 'No leads yet'}
               description={search || statusFilter ? 'Try adjusting your search or filters.' : 'Add your first lead to start building your pipeline.'}
               action={!search && !statusFilter ? <Button onClick={openCreate}>Create Lead</Button> : undefined}
             />
+          ) : viewMode === 'board' ? (
+            <div className="p-4">
+              <LeadsKanbanView
+                leads={filteredLeads}
+                onEdit={openEdit}
+                onRecommend={(lead) => router.push(`/leads/${lead.id}?tab=recommendations`)}
+                onStatusChange={handleStatusChange}
+              />
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -200,7 +239,7 @@ export function LeadsContent() {
                       </td>
                       <td className="px-5 py-4 text-sm text-neutral-600">{lead.company || '—'}</td>
                       <td className="px-5 py-4">
-                        <Badge variant={statusColor(lead.status)}>{lead.status}</Badge>
+                        <Badge variant={badgeVariant(lead.status)}>{lead.status}</Badge>
                       </td>
                       <td className="px-5 py-4 text-sm text-neutral-500">
                         {new Date(lead.createdAt).toLocaleDateString()}
@@ -220,7 +259,7 @@ export function LeadsContent() {
         </CardContent>
       </Card>
 
-      {/* Create/Edit Dialog */}
+{/* Create/Edit Dialog */}
       <Dialog
         open={dialogOpen}
         onClose={closeDialog}
@@ -249,7 +288,7 @@ export function LeadsContent() {
   );
 }
 
-function statusColor(status: string): 'neutral' | 'success' | 'warning' | 'danger' | 'info' | 'brand' {
+function badgeVariant(status: string): 'neutral' | 'success' | 'warning' | 'danger' | 'info' | 'brand' {
   switch (status) {
     case 'NEW': return 'brand';
     case 'CONTACTED': return 'info';
