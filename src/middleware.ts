@@ -1,19 +1,14 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
-const isPublicRoute = createRouteMatcher([
-  '/',
-  '/sign-in(.*)',
-  '/sign-up(.*)',
-  '/forgot-password(.*)',
-  '/sso-callback(.*)',
-  '/api/webhooks/(.*)',
-]);
+// NOTE: createRouteMatcher is deprecated in Clerk v7 and will be removed.
+// We've migrated to resource-based auth checks. Keep clerkMiddleware bare
+// to allow Clerk to attach sessions to all matched requests. Auth checks
+// should be done at the resource level using auth().protect() in each
+// protected page, layout, route handler, or server action.
+//
+// See: https://clerk.com/docs/guides/development/upgrading/upgrade-guides/migrate-from-create-route-matcher
 
-export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
-    await auth();
-  }
-});
+export default clerkMiddleware();
 
 export const config = {
   matcher: [
