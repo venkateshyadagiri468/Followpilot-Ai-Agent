@@ -36,11 +36,8 @@ class CanvasErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 }
 
-// R3F bundles react-reconciler, which reads React internals (e.g.
-// ReactCurrentBatchConfig) at import time. Next.js App Router prerenders 'use
-// client' pages on the server, where that import resolves to `undefined` and
-// crashes the build. Loading the Canvas lazily with ssr:false keeps the
-// reconciler out of the server bundle entirely.
+// Load Three.js Canvas lazily on the client (ssr: false) so WebGL and window
+// references remain client-side only and never execute during server prerendering.
 const CanvasOnly = dynamic(() => import('./AuthBackground3D.client'), {
   ssr: false,
   loading: () => null,
