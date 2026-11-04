@@ -1,4 +1,5 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
+import { NextResponse, type NextRequest, type NextFetchEvent } from "next/server";
 
 // NOTE: createRouteMatcher is deprecated in Clerk v7 and will be removed.
 // We've migrated to resource-based auth checks. Keep clerkMiddleware bare
@@ -8,7 +9,21 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 //
 // See: https://clerk.com/docs/guides/development/upgrading/upgrade-guides/migrate-from-create-route-matcher
 
-export default clerkMiddleware();
+const clerkHandler = clerkMiddleware();
+
+export default function middleware(req: NextRequest, event: NextFetchEvent) {
+  // If Clerk environment variables are not yet configured on Vercel, pass the
+  // request through safely instead of throwing unhandled exception that causes
+  // 500 MIDDLEWARE_INVOCATION_FAILED.
+  if (
+    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+    !process.env.CLERK_SECRET_KEY
+  ) {
+    return NextResponse.next();
+  }
+
+  return clerkHandler(req, event);
+}
 
 export const config = {
   matcher: [
