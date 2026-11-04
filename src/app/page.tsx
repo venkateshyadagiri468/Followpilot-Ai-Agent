@@ -4,7 +4,14 @@ import { AppShell } from '@/components/app-shell/AppShell';
 import { DashboardContent } from './DashboardContent';
 
 export default async function Page() {
-  const { userId } = await auth();
+  let userId: string | null = null;
+  try {
+    const session = await auth();
+    userId = session?.userId ?? null;
+  } catch {
+    userId = null;
+  }
+
   if (!userId) {
     redirect('/sign-in');
   }
