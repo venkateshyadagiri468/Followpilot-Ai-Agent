@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, Suspense } from 'react';
 import { useSignIn, useClerk } from '@clerk/nextjs';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +8,7 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { AuthBackground3D } from '@/components/auth/AuthBackground3D';
 import { AuthSocialButtons } from '@/components/auth/AuthSocialButtons';
 
-export default function SignInPage() {
+function SignInContent() {
   const { signIn } = useSignIn();
   const clerk = useClerk();
   const router = useRouter();
@@ -19,9 +19,6 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   const completeSignIn = useCallback(
     async (sessionId?: string | null) => {
@@ -76,14 +73,6 @@ export default function SignInPage() {
     },
     [signIn, isLoading, identifier, password, completeSignIn]
   );
-
-  if (!mounted) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0B0D12] text-white">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-      </div>
-    );
-  }
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-[#0B0D12] text-white selection:bg-emerald-500 selection:text-white">
@@ -317,5 +306,13 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0B0D12]" />}>
+      <SignInContent />
+    </Suspense>
   );
 }

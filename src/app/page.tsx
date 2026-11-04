@@ -1,10 +1,17 @@
-import { Protected } from '@/components/app-shell/Protected';
+import { auth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
+import { AppShell } from '@/components/app-shell/AppShell';
 import { DashboardContent } from './DashboardContent';
 
-export default function Page() {
+export default async function Page() {
+  const { userId } = await auth();
+  if (!userId) {
+    redirect('/sign-in');
+  }
+
   return (
-    <Protected>
+    <AppShell>
       <DashboardContent />
-    </Protected>
+    </AppShell>
   );
 }

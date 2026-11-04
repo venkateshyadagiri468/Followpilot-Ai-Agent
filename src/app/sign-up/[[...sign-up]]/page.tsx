@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, Suspense } from 'react';
 import { useSignUp, useClerk } from '@clerk/nextjs';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +8,7 @@ import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { AuthBackground3D } from '@/components/auth/AuthBackground3D';
 import { AuthSocialButtons } from '@/components/auth/AuthSocialButtons';
 
-export default function SignUpPage() {
+function SignUpContent() {
   const { signUp } = useSignUp();
   const clerk = useClerk();
   const router = useRouter();
@@ -22,9 +22,6 @@ export default function SignUpPage() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   // Live password strength calculation
   const passwordStrength = useMemo(() => {
@@ -140,14 +137,6 @@ export default function SignUpPage() {
     },
     [signUp, isLoading, verificationCode, completeSignUp]
   );
-
-  if (!mounted) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0B0D12] text-white">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-      </div>
-    );
-  }
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-[#0B0D12] text-white selection:bg-emerald-500 selection:text-white">
@@ -472,5 +461,13 @@ export default function SignUpPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0B0D12]" />}>
+      <SignUpContent />
+    </Suspense>
   );
 }

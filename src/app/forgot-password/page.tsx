@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useCallback, Suspense } from 'react';
 import { useSignIn, useClerk } from '@clerk/nextjs';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,9 +22,6 @@ function ForgotPasswordContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   // Step 1: Request reset code
   const handleSendCode = useCallback(
@@ -132,14 +129,6 @@ function ForgotPasswordContent() {
     },
     [signIn, isLoading, newPassword, confirmPassword, code, clerk, router, redirectUrl]
   );
-
-  if (!mounted) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0B0D12] text-white">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-      </div>
-    );
-  }
 
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-x-hidden bg-[#0B0D12] text-white selection:bg-emerald-500 selection:text-white">
